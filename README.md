@@ -203,7 +203,7 @@ The same applies to static assets: a `static/css/framework.css` in your site dir
 
 - Existing users are **never overwritten** (safe to re-run on every boot).
 - The file is read once at startup and accounts are created idempotently.
-- The password is hashed with PBKDF2 on import; the file is the only place plaintext exists.
+- The password is hashed with scrypt on import; the file is the only place plaintext exists.
 - These are seed passwords for initial account creation only. Users can change their password later.
 - **Do not commit this file to version control.** Add it to your `.gitignore`.
 
@@ -215,7 +215,7 @@ The same applies to static assets: a `static/css/framework.css` in your site dir
 |-----------|-------------|
 | Sessions | Stateless. The cookie is a signed, expiring `itsdangerous` payload. Valid on any worker. |
 | CSRF | Synchronizer token in a signed HttpOnly cookie + hidden form field / `X-CSRF-Token` header. Token is **bound to the user's identity**: a token issued for user A is rejected if the session is user B. |
-| Passwords | Hashed with `werkzeug.security` (PBKDF2). Plaintext never stored. |
+| Passwords | Hashed with `werkzeug.security` (scrypt, its default). Plaintext never stored. |
 | HSTS | `max-age=31536000; includeSubDomains` on all HTTPS responses. |
 | Cookies | `HttpOnly`, `SameSite=Lax`, `Secure` (when HTTPS). |
 | Open redirects | `safe_referrer()` only allows same-host or relative-path redirects. |
