@@ -1,0 +1,4 @@
+flask>=3.0
+sqlalchemy>=2.0
+itsdangerous>=2.1
+werkzeug>=3.0
