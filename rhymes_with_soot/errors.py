@@ -4,7 +4,8 @@ from flask import render_template, request, jsonify
 
 
 def _wants_json():
-    return "application/json" in request.accept_mimetypes or request.is_json
+    # Only JSON when the client explicitly prefers it.
+    return request.accept_mimetypes.best == "application/json" or request.is_json
 
 
 def register_error_handlers(app):

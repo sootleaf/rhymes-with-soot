@@ -59,14 +59,17 @@ def get_current_user():
 def login_required(f):
     """Decorator: require an authenticated user.
 
-    Redirects to the login page for GET requests, returns 401 for others.
+    Redirects to the login page for GET requests (with a ``next`` param so the
+    user returns to the page they asked for), returns 401 for others.
     """
     @wraps(f)
     def decorated(*args, **kwargs):
         user = get_current_user()
         if user is None:
             if request.method == "GET":
-                return redirect(url_for("auth.login"))
+                qs = request.query_string.decode()
+                next_url = request.path + ("?" + qs if qs else "")
+                return redirect(url_for("auth.login", next=next_url))
             abort(401)
         return f(*args, **kwargs)
     return decorated

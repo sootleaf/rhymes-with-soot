@@ -18,11 +18,23 @@ def _login_redirect():
     return current_app.config.get("LOGIN_REDIRECT", "/")
 
 
+def _safe_next(default):
+    """Return the ``next`` param if it is a same-origin path, else default.
+
+    Rejects absolute URLs and protocol-relative URLs (``//evil.example``) to
+    prevent open redirects.
+    """
+    nxt = request.args.get("next", "")
+    if nxt.startswith("/") and not nxt.startswith("//"):
+        return nxt
+    return default
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         if get_current_user():
-            return redirect(_login_redirect())
+            return redirect(_safe_next(_login_redirect()))
         return render_template("login.html")
 
     username = request.form.get("username", "").strip()
@@ -42,7 +54,7 @@ def login():
         return render_template("login.html", error="Invalid username or password."), 401
 
     logger.info("Login user=%s ip=%s", username, request.remote_addr)
-    resp = make_response(redirect(_login_redirect()))
+    resp = make_response(redirect(_safe_next(_login_redirect())))
     cookie_value = sign_session(username, current_app.config["SESSION_MAX_AGE"])
     resp.set_cookie(
         current_app.config["SESSION_COOKIE"],

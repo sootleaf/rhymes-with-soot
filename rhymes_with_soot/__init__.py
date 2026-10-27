@@ -77,6 +77,14 @@ def create_app(config_class, blueprints=None):
             )
         return response
 
+    # --- CSP (defense-in-depth) ---
+    @app.after_request
+    def _csp(response):
+        csp = app.config.get("CSP")
+        if csp:
+            response.headers["Content-Security-Policy"] = csp
+        return response
+
     @app.before_request
     def _csrf_protect():
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
@@ -142,6 +150,11 @@ def _find_static(folders, filename):
     """Return the absolute path of ``filename`` in the first folder that has it."""
     for folder in folders:
         path = os.path.join(folder, filename)
-        if os.path.isfile(path):
-            return path
+        if not os.path.isfile(path):
+            continue
+        base = os.path.realpath(folder)
+        real = os.path.realpath(path)
+        if not real.startswith(base + os.sep):
+            continue
+        return path
     return None

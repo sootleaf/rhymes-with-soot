@@ -10,6 +10,10 @@ class BaseConfig:
     # Session lifetime, in seconds.
     SESSION_MAX_AGE = 7 * 24 * 3600  # 7 days
 
+    # Content-Security-Policy header sent on every response. Set to a CSP
+    # string to enable; leave None (default) to disable.
+    CSP = None
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         own = cls.__dict__
