@@ -1,6 +1,6 @@
 """BaseConfig: resolves SECRET_KEY / DB_PATH / USERS_FILE from <ENV_PREFIX>_* env vars.
-ENV_PREFIX, SESSION_COOKIE, and CSRF_COOKIE are required — a site must set its own
-before the app can start."""
+ENV_PREFIX, SESSION_COOKIE, CSRF_COOKIE, and APP_NAME are required — a site must set
+its own before the app can start."""
 import os
 
 
@@ -41,6 +41,12 @@ class BaseConfig:
             raise RuntimeError(
                 f"{cls.__name__} must set CSRF_COOKIE "
                 "(e.g. CSRF_COOKIE = \"mysite_csrf\")."
+            )
+        # APP_NAME is what the framework renders in titles and the login heading;
+        # without it a site would silently show the framework's name.
+        if "APP_NAME" not in own:
+            raise RuntimeError(
+                f"{cls.__name__} must set APP_NAME (e.g. APP_NAME = \"My Site\")."
             )
 
     @classmethod

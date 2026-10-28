@@ -37,13 +37,27 @@ def test_missing_cookies_raise(monkeypatch):
         type(
             "NoSessionCookie",
             (BaseConfig,),
-            {"ENV_PREFIX": "MC", "CSRF_COOKIE": "mc_csrf"},
+            {"ENV_PREFIX": "MC", "CSRF_COOKIE": "mc_csrf", "APP_NAME": "M"},
         )
     with pytest.raises(RuntimeError, match="CSRF_COOKIE"):
         type(
             "NoCsrfCookie",
             (BaseConfig,),
-            {"ENV_PREFIX": "MC", "SESSION_COOKIE": "mc_session"},
+            {"ENV_PREFIX": "MC", "SESSION_COOKIE": "mc_session", "APP_NAME": "M"},
+        )
+
+
+def test_missing_app_name_raises(monkeypatch):
+    """APP_NAME is required; without it a site would silently show the framework's name."""
+    monkeypatch.setenv("MA_SECRET_KEY", "k")
+    monkeypatch.setenv("MA_DB_PATH", "/tmp/x.db")
+    monkeypatch.setenv("MA_USERS_FILE", "/tmp/u.json")
+    with pytest.raises(RuntimeError, match="APP_NAME"):
+        type(
+            "NoAppName",
+            (BaseConfig,),
+            {"ENV_PREFIX": "MA", "SESSION_COOKIE": "ma_session",
+             "CSRF_COOKIE": "ma_csrf"},
         )
 
 
@@ -65,7 +79,8 @@ def test_env_var_resolution(monkeypatch, tmp_path):
     monkeypatch.setenv("RES_USERS_FILE", str(tmp_path / "u.json"))
     cfg = type("EnvCfg", (BaseConfig,),
                {"ENV_PREFIX": "RES",
-                "SESSION_COOKIE": "res_session", "CSRF_COOKIE": "res_csrf"})
+                "SESSION_COOKIE": "res_session", "CSRF_COOKIE": "res_csrf",
+                "APP_NAME": "Res"})
     assert cfg.SECRET_KEY == "from-env"
     assert cfg.DB_PATH == str(tmp_path / "x.db")
 
@@ -79,7 +94,8 @@ def test_secret_keyfile(tmp_path, monkeypatch):
     monkeypatch.setenv("FK_USERS_FILE", "/tmp/u.json")
     cfg = type("FileCfg", (BaseConfig,),
                {"ENV_PREFIX": "FK",
-                "SESSION_COOKIE": "fk_session", "CSRF_COOKIE": "fk_csrf"})
+                "SESSION_COOKIE": "fk_session", "CSRF_COOKIE": "fk_csrf",
+                "APP_NAME": "Fk"})
     assert cfg.SECRET_KEY == "file-secret"
 
 
@@ -91,6 +107,7 @@ def test_explicit_class_values_bypass_env(monkeypatch):
         (BaseConfig,),
         {"ENV_PREFIX": "CI", "SECRET_KEY": "k", "DB_PATH": "/tmp/x.db",
          "USERS_FILE": "/tmp/u.json",
-         "SESSION_COOKIE": "ci_session", "CSRF_COOKIE": "ci_csrf"},
+         "SESSION_COOKIE": "ci_session", "CSRF_COOKIE": "ci_csrf",
+         "APP_NAME": "Ci"},
     )
     assert cfg.SECRET_KEY == "k"

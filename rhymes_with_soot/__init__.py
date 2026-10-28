@@ -137,7 +137,7 @@ def create_app(config_class, blueprints=None):
             "csrf_token": get_csrf_token(),
             "static_url": static_url,
             "current_user": get_current_user(),
-            "app_name": app.config.get("APP_NAME", "rhymes_with_soot"),
+            "app_name": app.config["APP_NAME"],
         }
 
     from rhymes_with_soot.errors import register_error_handlers
